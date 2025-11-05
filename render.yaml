@@ -1,0 +1,35 @@
+# Render Blueprint for Canteen Management System
+
+services:
+  - type: web
+    name: canteen-ms
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn -c gunicorn_config.py app:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: FLASK_APP
+        value: app.py
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: canteenms-db
+          property: connectionString
+
+databases:
+  - name: canteenms-db
+    databaseName: canteenms
+    user: canteenms_user
+    plan: free
+
+# Uncomment and configure if you need to set up a cron job
+# jobs:
+#   - name: cleanup-sessions
+#     env: python
+#     schedule: "0 0 * * *"  # Runs every day at midnight
+#     buildCommand: "pip install -r requirements.txt"
+#     startCommand: "python -c 'from app import app, db; from models import *; print("Cleaning up old sessions..."); Session.query.filter(Session.expiry < datetime.utcnow()).delete(); db.session.commit()'"

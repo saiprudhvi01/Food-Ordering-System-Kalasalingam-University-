@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}{{ canteen_name }} Menu - CanteenMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ canteen_name }}</h2>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Canteens
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        {% for category_name, items in menu.items() %}
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">{{ category_name }}</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for item in items %}
+                    <li class="list-group-item menu-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div style="width: 80px; height: 80px; overflow: hidden; border-radius: 4px; margin-right: 1rem;">
+                                    <img src="{{ item.image if item.image else 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=80' }}" 
+                                         alt="{{ item.name }}"
+                                         style="width: 100%; height: 100%; object-fit: cover;"
+                                         onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=80'"
+                                         loading="lazy">
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ item.name }}</h6>
+                                    <small class="text-muted">{{ item.description if item.description else '' }}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="me-3">₹{{ "%.2f"|format(item.price) }}</span>
+                                <button class="btn btn-sm btn-outline-primary add-to-cart" 
+                                        data-name="{{ item.name }}" 
+                                        data-price="{{ item.price }}"
+                                        data-canteen="{{ canteen_name }}">
+                                    <i class="bi bi-plus-lg"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Your Order</h5>
+            </div>
+            <div class="card-body" id="order-summary">
+                <p class="text-muted text-center my-4">Your cart is empty</p>
+            </div>
+            <div class="card-footer">
+                <div class="d-grid">
+                    <a href="{{ url_for('view_cart') }}" class="btn btn-primary" id="view-cart-btn" style="display: none;">
+                        View Cart & Checkout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add to cart functionality
+    $('.add-to-cart').click(function() {
+        const item = {
+            name: $(this).data('name'),
+            price: parseFloat($(this).data('price')),
+            canteen: $(this).data('canteen'),
+            quantity: 1
+        };
+        
+        // Send AJAX request to add item to cart
+        $.ajax({
+            url: '{{ url_for("add_to_cart") }}',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                item_name: item.name,
+                price: item.price,
+                canteen_name: item.canteen
+            }),
+            success: function(response) {
+                // Update cart badge
+                $('.cart-badge').text(response.cart_count || '0');
+                
+                // Show success message
+                const toast = `
+                    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header">
+                                <strong class="me-auto">Added to Cart</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                ${item.name} has been added to your cart.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('body').append(toast);
+                
+                // Remove toast after 3 seconds
+                setTimeout(() => {
+                    $('.toast').remove();
+                }, 3000);
+                
+                // Update order summary
+                updateOrderSummary();
+            },
+            error: function() {
+                alert('Failed to add item to cart. Please try again.');
+            }
+        });
+    });
+    
+    // Update order summary
+    function updateOrderSummary() {
+        $.get('{{ url_for("get_cart_summary") }}', function(data) {
+            if (data.items && data.items.length > 0) {
+                let html = '<ul class="list-group list-group-flush mb-3">';
+                let total = 0;
+                
+                data.items.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    
+                    html += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold">${item.name}</span>
+                                <br>
+                                <small class="text-muted">${item.quantity} x ₹${item.price.toFixed(2)}</small>
+                            </div>
+                            <span>₹${itemTotal.toFixed(2)}</span>
+                        </li>
+                    `;
+                });
+                
+                html += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                        <span>Total</span>
+                        <span>₹${total.toFixed(2)}</span>
+                    </li>
+                `;
+                
+                html += '</ul>';
+                
+                $('#order-summary').html(html);
+                $('#view-cart-btn').show();
+            } else {
+                $('#order-summary').html('<p class="text-muted text-center my-4">Your cart is empty</p>');
+                $('#view-cart-btn').hide();
+            }
+        });
+    }
+    
+    // Initial load of order summary
+    updateOrderSummary();
+});
+</script>
+{% endblock %}

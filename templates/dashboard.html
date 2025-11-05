@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - CanteenMS{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Available Canteens</h2>
+
+<div class="row">
+    {% for canteen_name, canteen_data in canteens.items() %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            {% set canteen_photo = {
+                'Juice & Milk Shake Shop (Anandam Cool Down Shop)': 'Juice and Milk Shake Shop Anandam Cool Down Shop.jpg',
+                'Varshini Canteen': 'Varshini canteen.jpg',
+                'Aachi Velammal': 'Aachi Vellamal.jpg',
+                'Bombay Chatwala': 'Bombai Chatwala.jpg',
+                'Godavari Ruchulu (Andhra Dosa & Meals)': 'Godavari Ruchulu.jpg',
+                'Healthy Tiffin Centre': 'Healthy tiffin center.jpg',
+                'Hill View Kerala Mess (ACIC KIF Shop No. KL13)': 'Hill view.jpg',
+                'Juice Club': 'Juice club.jpg',
+                'Kalki Foods': 'Kalki foods.jpg',
+                "Namu's Cake Shop": 'Namus cake shop.jpg',
+                'Radha Krishna Foods': 'Radha Krishna Foods.jpg',
+                'Raja Restaurant': 'Raja Restaurant.jpg',
+                'The Essence': 'The Essence.jpg'
+            }.get(canteen_name, 'default.jpg') %}
+            <img src="{{ url_for('static', filename='Canteens/' ~ canteen_photo) }}" class="card-img-top" alt="{{ canteen_name }}" style="height: 200px; object-fit: cover;" onerror="this.onerror=null; this.src='https://source.unsplash.com/400x300/?cafe,restaurant,{{ loop.index }}';">
+            <div class="card-body">
+                <h5 class="card-title">{{ canteen_name }}</h5>
+                <p class="card-text">
+                    {% set categories = canteen_data.categories.keys()|list %}
+                    {% for i in range(0, [categories|length, 2]|min) %}
+                        {{ categories[i] }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                    {% if categories|length > 2 %} and more...{% endif %}
+                </p>
+                <a href="{{ url_for('canteen_menu', canteen_name=canteen_name) }}" class="btn btn-primary">View Menu</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Canteen Dashboard - CanteenMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ current_user.canteen_name or 'Canteen' }} Dashboard</h2>
+        <div>
+            <span class="badge bg-primary">{{ orders|length }} Orders</span>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Orders</h5>
+                    <h2 class="mb-0">
+                        {{ orders|selectattr('status', 'equalto', 'pending')|list|length }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Preparing</h5>
+                    <h2 class="mb-0">
+                        {{ orders|selectattr('status', 'equalto', 'preparing')|list|length }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Ready for Pickup</h5>
+                    <h2 class="mb-0">
+                        {{ orders|selectattr('status', 'equalto', 'ready')|list|length }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-light">
+            <ul class="nav nav-tabs card-header-tabs" id="ordersTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                        Pending ({{ orders|selectattr('status', 'equalto', 'pending')|list|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="preparing-tab" data-bs-toggle="tab" data-bs-target="#preparing" type="button" role="tab">
+                        Preparing ({{ orders|selectattr('status', 'equalto', 'preparing')|list|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ready-tab" data-bs-toggle="tab" data-bs-target="#ready" type="button" role="tab">
+                        Ready ({{ orders|selectattr('status', 'equalto', 'ready')|list|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="delivered-tab" data-bs-toggle="tab" data-bs-target="#delivered" type="button" role="tab">
+                        Delivered ({{ orders|selectattr('status', 'equalto', 'delivered')|list|length }})
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body p-0">
+            <div class="tab-content" id="ordersTabContent">
+                <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                    {% include '_order_list.html' with context %}
+                </div>
+                <div class="tab-pane fade" id="preparing" role="tabpanel">
+                    {% include '_order_list.html' with context %}
+                </div>
+                <div class="tab-pane fade" id="ready" role="tabpanel">
+                    {% include '_order_list.html' with context %}
+                </div>
+                <div class="tab-pane fade" id="delivered" role="tabpanel">
+                    {% include '_order_list.html' with context %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function updateOrderStatus(orderId, status) {
+    fetch(`/order/update_status/${orderId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload the page to reflect changes
+            window.location.reload();
+        } else {
+            alert('Failed to update order status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the order status');
+    });
+}
+
+// Auto-refresh the page every 30 seconds
+setTimeout(function() {
+    window.location.reload();
+}, 30000);
+</script>
+{% endblock %}
+
+{% endblock %}
