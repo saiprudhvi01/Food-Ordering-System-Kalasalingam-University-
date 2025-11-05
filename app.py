@@ -8,10 +8,15 @@ import json
 from functools import wraps
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-here'  # Change this in production
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///canteen.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
+# Database configuration
+if os.environ.get('DATABASE_URL'):
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://", 1)
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///canteen.db'
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -957,11 +962,28 @@ def create_tables():
             db.session.add(admin)
             db.session.commit()
 
+@app.route('/init_db')
+def init_db_route():
+    with app.app_context():
+        db.create_all()
+        # Create a default admin user if not exists
+        if not User.query.filter_by(email='admin@example.com').first():
+            admin = User(
+                email='admin@example.com',
+                password=generate_password_hash('admin123'),
+                is_canteen=False
+            )
+            db.session.add(admin)
+            db.session.commit()
+    return "Database tables created successfully!"
+
 if __name__ == '__main__':
-    # Create database and tables
+    # For local development only
     db_file = os.path.join(os.path.dirname(__file__), 'instance', 'canteen.db')
     if not os.path.exists(os.path.dirname(db_file)):
         os.makedirs(os.path.dirname(db_file))
     
-    create_tables()
+    with app.app_context():
+        db.create_all()
+    
     app.run(debug=True)
