@@ -32,7 +32,10 @@
         </div>
         
         <div class="col-lg-6">
-            <img src="https://source.unsplash.com/600x400/?food,delivery" alt="Food Delivery" class="img-fluid rounded shadow">
+            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&h=400&auto=format&fit=crop&q=80" 
+                     alt="Food Delivery" 
+                     class="img-fluid rounded shadow"
+                     onerror="this.src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&auto=format&fit=crop&q=80'">
         </div>
     </div>
     
@@ -88,7 +91,10 @@
         {% for canteen_name, canteen_data in canteens.items() %}
         <div class="col-md-4 mb-4">
             <div class="card h-100">
-                <img src="https://source.unsplash.com/400x300/?canteen,food,{{ loop.index }}" class="card-img-top" alt="{{ canteen_name }}">
+                <img src="{{ url_for('static', filename='Canteens/' + (canteen_images[canteen_name] if canteen_images[canteen_name] else 'default-canteen.jpg')) }}" 
+                     class="card-img-top" 
+                     alt="{{ canteen_name }}"
+                     onerror="this.src='https://source.unsplash.com/400x300/?canteen,food,{{ loop.index }}'">
                 <div class="card-body">
                     <h5 class="card-title">{{ canteen_name }}</h5>
                     <p class="card-text">
