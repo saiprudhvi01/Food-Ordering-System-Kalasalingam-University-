@@ -47,7 +47,16 @@ CANTEEN_IMAGES = {
     "Juice & Milk Shake Shop (Anandam Cool Down Shop)": "Anandam cooldown shop.jpg",
     "Varshini Canteen": "Varshini canteen.jpg",
     "Aachi Velammal": "Aachi Vellamal.jpg",
-    # Add other canteens here with their exact image filenames
+    "Raja Restaurant": "Raja Restaurant.jpg",
+    "Juice Club": "Juice club.jpg",
+    "Bombay Chatwala": "Bombai Chatwala.jpg",
+    "Radha Krishna Foods": "Radha Krishna Foods.jpg",
+    "Godavari Ruchulu (Andhra Dosa & Meals)": "Godavari Ruchulu.jpg",
+    "Healthy Tiffin Centre": "Healthy tiffin center.jpg",
+    "Namu's Cake Shop": "Namus cake shop.jpg",
+    "Hill View Kerala Mess (ACIC KIF Shop No. KL13)": "Hill view.jpg",
+    "The Essence": "The Essence.jpg",
+    "Kalki Foods": "Kalki foods.jpg"
 }
 
 CANTEENS = {
@@ -644,7 +653,7 @@ def canteen_required(f):
 def index():
     if current_user.is_authenticated and current_user.is_canteen:
         return redirect(url_for('canteen_dashboard'))
-    return render_template('index.html', canteens=CANTEENS)
+    return render_template('index.html', canteens=CANTEENS, canteen_images=CANTEEN_IMAGES)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
