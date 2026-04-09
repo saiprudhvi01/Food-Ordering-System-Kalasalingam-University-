@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Login - CanteenMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-body p-4">
+                <h2 class="text-center mb-4">Login</h2>
+                <form method="POST" action="{{ url_for('login') }}" onsubmit="return validateLoginForm()">
+                    <div class="mb-3">
+                        <label for="identifier" class="form-label">Email or Canteen Name</label>
+                        <input type="text" class="form-control" id="identifier" name="email" required>
+                        <div class="form-text">For canteen login, enter canteen name. For students, use your email.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">Default canteen password: 1234</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function validateLoginForm() {
+    // Client-side validation removed to allow canteen names
+    return true;
+}
+</script>
+{% endblock %}
+{% endblock %}
